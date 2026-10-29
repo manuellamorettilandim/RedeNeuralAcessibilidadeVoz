@@ -1,0 +1,42 @@
+# =============================================
+# .gitignore — Voice Accessibility AI
+# =============================================
+
+# Dataset de áudio (pesado, não vai para o servidor)
+dataset/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Ambientes virtuais
+venv/
+env/
+.env
+.venv/
+
+# Arquivos temporários
+*.tmp
+*.log
+*.bak
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos Windows-only (não rodam no Linux/Render)
+*.ps1
+
+# Modelo Keras (usamos só o .pt)
+models/voice_command_model.keras
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.user
+

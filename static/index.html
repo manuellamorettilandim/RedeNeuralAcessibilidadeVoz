@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reconhecimento de Comandos de Voz para Acessibilidade usando Redes Neurais e Coeficientes MFCC.">
+  <title>Voice Accessibility AI - Reconhecimento de Voz & MFCC</title>
+
+  <!-- Google Fonts: Outfit, Inter e JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Estilos da Aplicação -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ====================================================================
+       CABEÇALHO DA APLICAÇÃO
+       ==================================================================== -->
+  <header class="app-header">
+    <div class="brand-wrapper">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <h1>Voice Accessibility AI</h1>
+        <p>Reconhecimento de Comandos por MFCC & Redes Neurais Artificiais</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="accessibility-quick-bar">
+        <button id="contrastToggleBtn" class="quick-btn" title="Alternar entre Modo Claro e Modo Escuro">
+          <span>☀️</span> Modo Claro
+        </button>
+        <span class="quick-btn" id="fontScaleBadge" title="Multiplicador de Fonte Atual">
+          100%
+        </span>
+      </div>
+
+      <div class="status-badge" title="Status do Backend e Modelo Neural">
+        <span class="status-dot"></span>
+        <span>CNN 2D Keras Ativa</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================================================================
+       NAVEGAÇÃO POR ABAS (5 ABAS PRINCIPAIS)
+       ==================================================================== -->
+  <div class="tabs-nav-container">
+    <nav class="tabs-nav" aria-label="Navegação do Dashboard">
+      <button class="tab-btn active" data-tab="tab-demo">
+        Demonstração Prática
+      </button>
+      <button class="tab-btn" data-tab="tab-theory">
+        Teoria & Conceitos
+      </button>
+      <button class="tab-btn" data-tab="tab-pipeline">
+        Pipeline de Dados
+      </button>
+      <button class="tab-btn" data-tab="tab-results">
+        Resultados & Métricas
+      </button>
+      <button class="tab-btn" data-tab="tab-future">
+        Conclusões & Futuro
+      </button>
+    </nav>
+  </div>
+
+  <!-- ====================================================================
+       CONTEÚDO PRINCIPAL
+       ==================================================================== -->
+  <main class="main-content">
+
+    <!-- ==================================================================
+         ABA 3: DEMONSTRAÇÃO PRÁTICA & SIMULADOR (Ativa por Padrão)
+         ================================================================== -->
+    <section id="tab-demo" class="tab-pane active">
+      <div class="section-header">
+        <span class="section-tag">Demonstração Interativa em Tempo Real</span>
+        <h2>Reconhecimento de Voz & Simulador de Acessibilidade</h2>
+        <p>Grave um comando de voz no seu microfone, envie um arquivo WAV ou teste com as amostras pré-carregadas para ver a IA em ação.</p>
+      </div>
+
+      <div class="demo-grid-layout">
+        <!-- Coluna Esquerda: Entrada de Áudio e Inferência -->
+        <div class="recording-panel">
+          <div class="mic-recorder-box">
+            <button id="micRecordBtn" class="mic-btn" title="Clique para Gravar Comando de 1.5s" aria-label="Gravar comando pelo microfone">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            </button>
+
+            <span id="countdownTimer" class="countdown-timer">1.5s</span>
+            <p id="recordStatusText" class="record-instructions">Clique no microfone para falar um comando de 1.5 segundos</p>
+
+            <canvas id="liveWaveCanvas" class="live-wave-canvas"></canvas>
+          </div>
+
+          <div class="upload-row">
+            <label class="custom-file-upload">
+              <input type="file" id="audioFileInput" accept=".wav" style="display: none;">
+              <span>📁</span> Carregar Áudio (.wav)
+            </label>
+          </div>
+
+          <!-- Bateria de Amostras de Teste Rápido -->
+          <div class="card" style="padding: 1.25rem;">
+            <h4 class="card-title" style="font-size: 1rem; margin-bottom: 0.75rem;">
+              <span>⚡</span> Teste Rápido com Amostras Pré-gravadas
+            </h4>
+            <div id="quickSamplesList" class="quick-samples-list">
+              <!-- Gerado dinamicamente via JS -->
+            </div>
+          </div>
+
+          <!-- Caixa de Resultado da Inferência -->
+          <div class="inference-result-box">
+            <div class="prediction-hero">
+              <div class="prediction-info">
+                <h3>Comando Detectado pela IA</h3>
+                <div id="predClassName" class="pred-name">Aguardando áudio...</div>
+              </div>
+              <div id="predConfidence" class="confidence-pill">--%</div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+              <span>Distribuição de Probabilidades:</span>
+              <span>Latência: <strong id="inferenceLatency" style="color: var(--accent-cyan);">-- ms</strong></span>
+            </div>
+
+            <div id="probabilitiesList" class="probabilities-list">
+              <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">
+                Envie um comando de voz para visualizar a distribuição softmax da rede neural.
+              </div>
+            </div>
+
+            <!-- Mapa de Calor MFCC do Áudio Ingerido -->
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                <span>Matriz MFCC Extraída (20 Coeficientes × 47 Janelas)</span>
+                <span style="font-size: 0.75rem; color: var(--accent-cyan);">Heatmap Espectro-Temporal</span>
+              </div>
+              <div class="canvas-container" style="padding: 0.5rem;">
+                <canvas id="liveMfccCanvas" height="150"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna Direita: Simulador de Acessibilidade -->
+        <div class="accessibility-simulator-card">
+          <div>
+            <span class="section-tag">Ação Visual & Auditiva</span>
+            <h3 class="card-title" style="font-size: 1.4rem;">
+              <span>♿</span> Painel do Simulador de Acessibilidade
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+              Quando um comando é previsto pela IA, a ação correspondente é disparada dinamicamente nesta interface.
+            </p>
+          </div>
+
+          <!-- Tela do Artigo com Acessibilidade -->
+          <div class="sim-screen" id="simScreen">
+            <div class="sim-screen-header">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="sim-article-title">Tecnologia Assistiva e Inclusão</span>
+                <span class="sim-tag-editable" title="Você pode editar o texto abaixo livremente">✏️ Editável</span>
+              </div>
+              <span id="contrastModeBadge" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
+                Modo Escuro
+              </span>
+            </div>
+
+            <!-- Editor de Texto para Síntese Vocal -->
+            <div class="sim-text-wrapper">
+              <div class="sim-text-toolbar">
+                <span class="char-count" id="simCharCount">41 palavras • 304 caracteres</span>
+                <div class="sim-text-actions">
+                  <button type="button" id="btnPresetDefault" class="sim-pill-btn" title="Restaurar texto padrão de exemplo">
+                    <span>↺</span> Padrão
+                  </button>
+                  <button type="button" id="btnClearText" class="sim-pill-btn" title="Limpar campo de texto">
+                    <span>🗑️</span> Limpar
+                  </button>
+                  <button type="button" id="btnSpeakNow" class="sim-pill-btn primary" title="Ouvir texto agora ou pausar leitura">
+                    <span id="speakBtnIcon">🔊</span> <span id="speakBtnText">Ouvir</span>
+                  </button>
+                </div>
+              </div>
+
+              <textarea 
+                id="simTextContent" 
+                class="sim-text-content sim-text-editor" 
+                rows="5" 
+                placeholder="Digite ou cole aqui o texto que você deseja que a voz sintetizada leia..."
+                aria-label="Texto a ser falado pela síntese de voz"
+                spellcheck="true">O reconhecimento de voz baseado em coeficientes MFCC e redes neurais profundas proporciona autonomia digital sem precedentes para pessoas com deficiências motoras e visuais. Comandos simples como ler a tela, aumentar a tipografia ou ajustar o contraste transformam a web em um espaço verdadeiramente universal e acessível.</textarea>
+
+              <div class="sim-quick-presets">
+                <span class="presets-label">Exemplos rápidos:</span>
+                <button type="button" class="preset-chip" data-preset="acessibilidade">Acessibilidade Digital</button>
+                <button type="button" class="preset-chip" data-preset="ia">Redes Neurais & IA</button>
+                <button type="button" class="preset-chip" data-preset="saudacao">Saudação do Assistente</button>
+              </div>
+            </div>
+
+            <div class="sim-controls-feedback">
+              <div class="zoom-feedback-group">
+                <div class="zoom-controls-label-row">
+                  <strong>Zoom:</strong>
+                  <div class="zoom-stepper">
+                    <button type="button" id="btnZoomMinus" class="zoom-step-btn" title="Diminuir fonte (-15%)" aria-label="Diminuir tamanho da fonte">➖</button>
+                    <span id="simFontScaleBadge" class="font-scale-display" title="Escala tipográfica atual">100%</span>
+                    <button type="button" id="btnZoomPlus" class="zoom-step-btn" title="Aumentar fonte (+15%)" aria-label="Aumentar tamanho da fonte">➕</button>
+                    <button type="button" id="btnZoomVoicePrompt" class="zoom-voice-btn" title="Falar a quantidade desejada por voz" aria-label="Falar porcentagem de zoom por voz">
+                      <span>🎙️</span> Falar %
+                    </button>
+                  </div>
+                </div>
+                <input type="range" id="fontScaleSlider" class="zoom-range-slider" min="70" max="220" step="5" value="100" aria-label="Ajustar escala da fonte visualmente" title="Arraste para ajustar o zoom">
+              </div>
+              <div style="align-self: flex-start;">
+                <strong>Voz:</strong> <span id="voiceProfileBadge">Voz Padrão pt-BR</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões de Teste Manual da Acessibilidade -->
+          <div>
+            <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">
+              Acionamento Manual dos Comandos
+            </h4>
+            <div class="action-trigger-buttons">
+              <button id="actionBtnRead" class="action-trigger-btn">
+                <span>🔊</span> "ler texto" (TTS)
+              </button>
+              <button id="actionBtnFont" class="action-trigger-btn">
+                <span>🔍➕</span> "aumentar fonte" (+15%)
+              </button>
+              <button id="actionBtnDecreaseFont" class="action-trigger-btn">
+                <span>🔍➖</span> "diminuir fonte" (-15%)
+              </button>
+              <button id="actionBtnVoice" class="action-trigger-btn">
+                <span>🎭</span> "mudar voz" (Timbre)
+              </button>
+              <button id="actionBtnLightMode" class="action-trigger-btn" title="Ativar modo claro">
+                <span>☀️</span> "modo claro"
+              </button>
+              <button id="actionBtnDarkMode" class="action-trigger-btn" title="Ativar modo escuro">
+                <span>🌙</span> "modo escuro"
+              </button>
+            </div>
+          </div>
+
+          <!-- Resumo de Mapeamento dos Comandos -->
+          <div class="command-map-box" style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; font-size: 0.82rem; color: var(--text-muted);">
+            <strong class="command-map-title" style="color: #fff;">Mapeamento de Comandos de Voz:</strong>
+            <ul style="margin-left: 1.25rem; margin-top: 0.4rem; line-height: 1.6;">
+              <li><code style="color: var(--accent-blue);">"ler texto"</code>: Dispara síntese de voz (Web Speech API) com marcação de leitura.</li>
+              <li><code style="color: var(--accent-emerald);">"aumentar fonte"</code>: Abre assistente vocal para falar quantidade (ex: "20%") ou eleva zoom.</li>
+              <li><code style="color: var(--accent-rose);">"diminuir fonte"</code>: Abre assistente vocal para falar quantidade ou reduz o zoom.</li>
+              <li><code style="color: var(--accent-purple);">"mudar voz"</code>: Alterna tom, velocidade e voz do narrador assistivo.</li>
+              <li><code style="color: var(--accent-amber);">"modo claro"</code>: Ativa o tema visual claro para ambientes iluminados.</li>
+              <li><code style="color: var(--accent-cyan);">"modo escuro"</code>: Ativa o tema visual escuro com alto contraste e descanso visual.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ABA 1: TEORIA & CONCEITOS
+         ================================================================== -->
+    <section id="tab-theory" class="tab-pane">
+      <div class="section-header">
+        <span class="section-tag">Fundamentação Científica & Teórica</span>
+        <h2>Redes Neurais, Aprendizado Supervisionado e MFCCs</h2>
+        <p>Entenda em profundidade os princípios matemáticos e computacionais que tornam o reconhecimento de fala possível.</p>
+      </div>
+
+      <div class="theory-grid">
+        <!-- Card 1: Redes Neurais -->
+        <div class="card theory-card">
+          <div>
+            <h3><span>🧠</span> Redes Neurais Artificiais (RNAs)</h3>
+            <p>
+              Inspiradas na estrutura do córtex biológico, as RNAs são aproximadores universais de funções. Cada neurônio artificial recebe sinais ponderados por pesos sinápticos (<var>w<sub>i</sub></var>), soma uma constante de viés (<var>b</var>) e passa o resultado por uma função de ativação não-linear.
+            </p>
+            <div class="formula-box">
+              z = &sum; (w<sub>i</sub> &middot; x<sub>i</sub>) + b &nbsp;&rarr;&nbsp; a = &sigma;(z)
+            </div>
+            <p>
+              <strong>Camadas Utilizadas:</strong> Nossa arquitetura Convolucional 2D utiliza camadas <code>Conv2D</code> para capturar padrões espectrais locais, camadas <code>MaxPooling2D</code> para redução dimensional, <code>Dropout</code> para evitar co-adaptação e <code>Dense</code> final com ativação <code>Softmax</code> para distribuição de probabilidades.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: Aprendizado Supervisionado -->
+        <div class="card theory-card">
+          <div>
+            <h3><span>🎯</span> Aprendizado Supervisionado</h3>
+            <p>
+              O modelo aprende a partir de pares rotulados de entrada e saída <var>(X, y)</var>. Para cada amostra de áudio pré-processada, a rede calcula sua predição através de um ciclo estocástico:
+            </p>
+            <div class="formula-box">
+              &Lscr; = -&sum; y<sub>i</sub> &middot; log(&ycirc;<sub>i</sub>) &nbsp;&nbsp;(Categorical Cross-Entropy)
+            </div>
+            <p>
+              <strong>Backpropagation & Adam:</strong> O erro é propagado de volta através da regra da cadeia do cálculo diferencial. O otimizador Adam calcula taxas de aprendizado adaptativas baseadas nos momentos de primeira e segunda ordem dos gradientes, atualizando os pesos em direção ao mínimo global da função de perda.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3: O que são MFCCs -->
+        <div class="card theory-card">
+          <div>
+            <h3><span>🎵</span> Coeficientes Cepstrais na Escala Mel (MFCCs)</h3>
+            <p>
+              O áudio cru em 1D é altamente redundante e sensível a variações de fase. Os MFCCs representam o padrão ouro no processamento de fala porque modelam com precisão o <strong>trato vocal humano</strong>, desconsiderando a frequência fundamental (pitch) e retendo a forma espectral (formantes).
+            </p>
+            <div class="formula-box">
+              Mel(f) = 2595 &middot; log<sub>10</sub>(1 + f / 700)
+            </div>
+            <p>
+              A <strong>Escala Mel</strong> reflete a percepção do ouvido humano, que é muito mais sensível a pequenas variações em baixas frequências (&lt; 1000 Hz) do que em altas frequências.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipeline de 6 Passos dos MFCCs -->
+      <div class="card">
+        <h3 class="card-title">
+          <span>⚙️</span> O Pipeline de Extração de MFCC Passo a Passo
+        </h3>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">
+          Como uma onda sonora de pressão no ar é transformada em uma matriz compacta 20 × 47 para a Rede Neural:
+        </p>
+
+        <div class="pipeline-steps">
+          <div class="step-card">
+            <span class="step-number">1</span>
+            <h4>Pré-ênfase</h4>
+            <p>Filtro passa-altas que amplifica altas frequências naturalmente atenuadas na fala: <br><code>y[t] = x[t] - &alpha;x[t-1]</code>.</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">2</span>
+            <h4>Enquadramento</h4>
+            <p>Divide o áudio em janelas curtas de 32ms (estacionárias) e aplica Janela de Hamming para evitar vazamento espectral.</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">3</span>
+            <h4>FFT (Fourier)</h4>
+            <p>Aplica Transformada Rápida de Fourier para converter cada janela temporal no espectro de potência de frequências.</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">4</span>
+            <h4>Filtros Mel</h4>
+            <p>Aplica banco de filtros triangulares sobrepostos distribuídos na escala Mel, simulando a cóclea humana.</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">5</span>
+            <h4>Logaritmo</h4>
+            <p>Aplica o logaritmo das energias, emulando a resposta logarítmica da audição humana à intensidade sonora (decibéis).</p>
+          </div>
+
+          <div class="step-card">
+            <span class="step-number">6</span>
+            <h4>DCT (Cepstrum)</h4>
+            <p>Transformada Discreta do Cosseno descorrelaciona os filtros, gerando coeficientes independentes e compactos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ABA 2: PIPELINE DE DADOS & ÁUDIO
+         ================================================================== -->
+    <section id="tab-pipeline" class="tab-pane">
+      <div class="section-header">
+        <span class="section-tag">Engenharia de Dados Acústicos</span>
+        <h2>Dataset, Espectrogramas e Matrizes MFCC</h2>
+        <p>Explore as gravações sonoras de cada comando e visualize a representação matricial 2D que alimenta a IA.</p>
+      </div>
+
+      <div class="data-pipeline-layout">
+        <!-- Lista de Comandos -->
+        <div class="card">
+          <h3 class="card-title"><span>📂</span> Classes do Dataset</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Selecione uma classe para ouvir a amostra de áudio e inspecionar sua matriz MFCC correspondente:
+          </p>
+          <div id="pipelineClassList" class="classes-list">
+            <!-- Gerado via JS -->
+          </div>
+
+          <div style="margin-top: 1.5rem; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
+            <h4 style="font-size: 0.9rem; color: var(--accent-cyan); margin-bottom: 0.5rem;">Parâmetros Técnicos de Extração:</h4>
+            <ul style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.8; list-style: none;">
+              <li>🔹 <strong>Taxa de Amostragem (SR):</strong> 16.000 Hz</li>
+              <li>🔹 <strong>Duração Padronizada:</strong> 1.5 s (24.000 amostras)</li>
+              <li>🔹 <strong>Tamanho da FFT:</strong> 1.024 amostras</li>
+              <li>🔹 <strong>Hop Length:</strong> 512 amostras</li>
+              <li>🔹 <strong>Quantidade de MFCCs:</strong> 20 coeficientes</li>
+              <li>🔹 <strong>Dimensão de Entrada:</strong> (20, 47, 1)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Visualizador da Amostra Selecionada -->
+        <div class="card spectrogram-display-card">
+          <div>
+            <span class="section-tag">Amostra Selecionada</span>
+            <h3 id="pipelineSampleTitle" style="font-size: 1.4rem; color: #fff;">Ler Texto (Comando 1)</h3>
+          </div>
+
+          <!-- Player de Áudio -->
+          <div class="audio-player-box">
+            <span>🔊</span>
+            <audio id="pipelineAudioPlayer" controls></audio>
+          </div>
+
+          <!-- Heatmap MFCC -->
+          <div>
+            <div class="canvas-header">
+              <span>Espectrograma Cepstral MFCC (Tempo vs Frequência Mel)</span>
+              <span style="font-size: 0.75rem; color: var(--accent-cyan);">20 × 47 canais</span>
+            </div>
+            <div class="canvas-container">
+              <canvas id="pipelineMfccCanvas" height="160"></canvas>
+            </div>
+          </div>
+
+          <!-- Explicação da Matriz -->
+          <div style="background: rgba(15, 23, 42, 0.7); border-radius: var(--radius-md); padding: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+            <strong style="color: #fff;">Interpretação do Mapa de Calor:</strong>
+            O eixo vertical representa os coeficientes de frequência da Escala Mel (do mais grave na base ao mais agudo no topo). O eixo horizontal representa os 47 intervalos temporais de 32ms ao longo de 1.5 segundos. Cores mais quentes (amarelo/vermelho) indicam maior concentração de energia sonora naquela banda espectral.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ABA 4: RESULTADOS & MÉTRICAS
+         ================================================================== -->
+    <section id="tab-results" class="tab-pane">
+      <div class="section-header">
+        <span class="section-tag">Avaliação Experimental</span>
+        <h2>Desempenho e Métricas do Modelo</h2>
+        <p>Resultados obtidos no conjunto de teste independente (20% dos dados com validação estratificada).</p>
+      </div>
+
+      <!-- Grade de KPIs -->
+      <div class="metrics-kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-title">Acurácia no Teste</span>
+          <span id="kpiTestAcc" class="kpi-value cyan">85.7%</span>
+          <span class="kpi-subtitle">Avaliado em amostras inéditas</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Perda Final (Loss)</span>
+          <span id="kpiTestLoss" class="kpi-value emerald">0.3354</span>
+          <span class="kpi-subtitle">Categorical Cross-Entropy</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Amostras do Dataset</span>
+          <span id="kpiTotalSamples" class="kpi-value purple">350</span>
+          <span class="kpi-subtitle">70 áudios por classe</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Épocas Treinadas</span>
+          <span id="kpiEpochs" class="kpi-value amber">40</span>
+          <span class="kpi-subtitle">Com EarlyStopping</span>
+        </div>
+      </div>
+
+      <!-- Gráficos de Treinamento e Matriz de Confusão -->
+      <div class="metrics-visual-grid">
+        <div class="card image-preview-card">
+          <h3 class="card-title" style="font-size: 1.1rem; justify-content: center;">
+            <span>📈</span> Curvas de Acurácia e Loss
+          </h3>
+          <img src="../models/training_history.png" alt="Curvas de Treinamento da Rede Neural" onerror="this.onerror=null; this.src='/models/training_history.png';">
+        </div>
+
+        <div class="card image-preview-card">
+          <h3 class="card-title" style="font-size: 1.1rem; justify-content: center;">
+            <span>🎯</span> Matriz de Confusão
+          </h3>
+          <img src="../models/confusion_matrix.png" alt="Matriz de Confusão por Comando" onerror="this.onerror=null; this.src='/models/confusion_matrix.png';">
+        </div>
+      </div>
+
+      <!-- Tabela de Classificação Detalhada -->
+      <div class="card">
+        <h3 class="card-title">
+          <span>📋</span> Relatório de Classificação por Comando de Voz
+        </h3>
+        <div class="classification-table-container">
+          <table class="classification-table">
+            <thead>
+              <tr>
+                <th>Comando / Classe</th>
+                <th>Precisão (Precision)</th>
+                <th>Revocação (Recall)</th>
+                <th>F1-Score</th>
+                <th>Amostras de Teste</th>
+              </tr>
+            </thead>
+            <tbody id="classificationReportBody">
+              <!-- Preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ABA 5: CONCLUSÕES, LIMITAÇÕES & FUTURO
+         ================================================================== -->
+    <section id="tab-future" class="tab-pane">
+      <div class="section-header">
+        <span class="section-tag">Discussão Crítica & Próximos Passos</span>
+        <h2>Análise de Limitações e o Futuro da Acessibilidade</h2>
+        <p>Reflexões sobre desafios do mundo real, ruído acústico, generalização e soluções para produção.</p>
+      </div>
+
+      <div class="conclusions-grid">
+        <!-- Card 1: Análise de Erros e Limitações -->
+        <div class="card conclusion-card">
+          <h3><span>⚠️</span> Análise de Erros & Limitações da IA</h3>
+          <ul>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Ruído de Fundo & Falsos Positivos:</strong>
+                Em ambientes reais (rua, cafeteria, escritórios), ruídos abruptos podem ser confundidos com fonemas. A classe de <em>background/silêncio</em> foi essencial para absorver esses padrões e impedir ativações acidentais.
+              </div>
+            </li>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Variação de Sotaque e Velocidade:</strong>
+                Pessoas de diferentes regiões do Brasil pronunciam vogais com cadências e formantes distintos. O Data Augmentation (pitch shift e time stretch) reduziu o risco de overfitting a timbres específicos.
+              </div>
+            </li>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Qualidade de Hardware:</strong>
+                Microfones embutidos de laptops possuem filtros passa-alta agressivos que podem atenuar frequências graves, alterando os primeiros coeficientes MFCC.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Card 2: Acessibilidade no Mundo Real -->
+        <div class="card conclusion-card">
+          <h3><span>♿</span> Impacto Social & Inclusão Digital</h3>
+          <ul>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Pessoas com Deficiência Motora Severa:</strong>
+                Para indivíduos com ELA, tetraplegia ou Parkinson avançado, a voz é frequentemente a única interface de entrada viável para navegar na web e interagir com computadores.
+              </div>
+            </li>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Baixa Visão e Fadiga Ocular:</strong>
+                Comandos rápidos como <em>"aumentar fonte"</em> e <em>"alto contraste"</em> evitam que o usuário precise navegar em menus complexos ou atalhos de teclado inacessíveis.
+              </div>
+            </li>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Prevenção de LER/DORT:</strong>
+                Trabalhadores e estudantes com dores crônicas ou lesões por esforço repetitivo se beneficiam de comandos de voz curtos para tarefas de leitura contínua.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Card 3: Tecnologias Futuras -->
+        <div class="card conclusion-card">
+          <h3><span>🚀</span> Próximos Passos & Produção</h3>
+          <ul>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Edge Computing com TFLite / WebAssembly:</strong>
+                Exportar a rede neural para rodar 100% no navegador do usuário via WebAssembly ou WebGPU, garantindo privacidade absoluta (sem envio de áudio para servidores) e latência inferior a 5ms.
+              </div>
+            </li>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Detecção de Palavra de Ativação (Wake-Word):</strong>
+                Implementar uma palavra de ativação contínua (ex: <em>"Assistente, ler texto"</em>) usando modelos de streaming baseados em RNN/Conformer.
+              </div>
+            </li>
+            <li>
+              <span class="bullet-icon">➤</span>
+              <div>
+                <strong>Expansão de Vocabulário:</strong>
+                Adicionar comandos compostos de acessibilidade como <em>"rolar página"</em>, <em>"clicar no link"</em> e <em>"modo foco"</em>.
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       RODAPÉ
+       ==================================================================== -->
+  <footer class="app-footer">
+    <p>
+      Voice Accessibility AI &bull; Desenvolvido com Python, Librosa, TensorFlow/Keras e FastAPI &bull; Conformidade de Acessibilidade WCAG 2.2 AAA
+    </p>
+  </footer>
+
+  <!-- Container de Notificações Acessíveis (Toast) -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- ====================================================================
+       MODAL ACESSÍVEL: AJUSTE DE FONTE POR VOZ (AUMENTAR / DIMINUIR)
+       ==================================================================== -->
+  <div id="voiceFontModal" class="voice-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="voiceFontModalTitle" style="display: none;">
+    <div class="voice-modal-card">
+      <div class="voice-modal-header">
+        <div class="voice-modal-title-wrapper">
+          <span class="voice-modal-icon">🎙️</span>
+          <div>
+            <h3 id="voiceFontModalTitle">Ajustar Tamanho da Fonte por Voz</h3>
+            <p id="voiceModalSubtitle" class="voice-modal-sub">Diga quanto deseja alterar (ex: <em>"20%"</em>, <em>"aumentar 30%"</em>, <em>"diminuir 15%"</em>)</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseVoiceModal" class="voice-modal-close" aria-label="Fechar janela de voz">&times;</button>
+      </div>
+
+      <!-- Animação do Microfone Ativo / Ondas Sonoras -->
+      <div class="voice-listening-visual">
+        <div id="voicePulseIndicator" class="voice-pulse-ring active">
+          <svg viewBox="0 0 24 24" class="voice-mic-icon">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+        </div>
+        <div class="sound-wave-bars">
+          <span class="bar bar-1"></span>
+          <span class="bar bar-2"></span>
+          <span class="bar bar-3"></span>
+          <span class="bar bar-4"></span>
+          <span class="bar bar-5"></span>
+        </div>
+        <span id="voiceStatusBadge" class="voice-status-text">Ouvindo seu microfone... Fale agora!</span>
+      </div>
+
+      <!-- Caixa de Transcrição da Fala em Tempo Real -->
+      <div class="voice-transcription-container">
+        <label for="voiceTranscriptText" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">O que você falou:</label>
+        <div id="voiceTranscriptBox" class="voice-transcript-box">
+          <span id="voiceTranscriptText" class="transcript-placeholder">Aguardando você falar a porcentagem...</span>
+        </div>
+      </div>
+
+      <!-- Ajuste Numérico / Valor Calculado -->
+      <div class="voice-value-preview-row">
+        <div>
+          <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">Nova Escala Resultante:</span>
+          <strong id="voiceComputedScaleText" style="font-size: 1.35rem; color: var(--accent-cyan);">100%</strong>
+        </div>
+        <div class="voice-manual-input-box">
+          <label for="voiceManualPercentInput" style="font-size: 0.75rem; color: var(--text-dim);">Ou ajuste o valor:</label>
+          <div class="percent-input-wrapper">
+            <input type="number" id="voiceManualPercentInput" min="70" max="220" step="5" value="100" aria-label="Porcentagem de zoom">
+            <span>%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chips de Atalhos Rápidos de Porcentagem -->
+      <div class="voice-modal-chips">
+        <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 600;">Atalhos rápidos:</span>
+        <div class="chips-group">
+          <button type="button" class="voice-chip minus" data-delta="-25%">-25%</button>
+          <button type="button" class="voice-chip minus" data-delta="-15%">-15%</button>
+          <button type="button" class="voice-chip minus" data-delta="-10%">-10%</button>
+          <button type="button" class="voice-chip reset" data-scale="100%">100% (Normal)</button>
+          <button type="button" class="voice-chip plus" data-delta="+15%">+15%</button>
+          <button type="button" class="voice-chip plus" data-delta="+25%">+25%</button>
+          <button type="button" class="voice-chip plus" data-delta="+50%">+50%</button>
+        </div>
+      </div>
+
+      <!-- Botões de Ação do Modal -->
+      <div class="voice-modal-actions">
+        <button type="button" id="btnRestartVoiceListening" class="modal-secondary-btn">
+          <span>🎙️</span> Falar Novamente
+        </button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" id="btnCancelVoiceModal" class="modal-secondary-btn">Cancelar</button>
+          <button type="button" id="btnApplyVoiceFont" class="modal-primary-btn">
+            <span>✓</span> Aplicar Tamanho
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts da Aplicação -->
+  <script src="js/audio_recorder.js"></script>
+  <script src="js/accessibility.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

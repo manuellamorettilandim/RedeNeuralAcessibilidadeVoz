@@ -1,0 +1,51 @@
+[
+  {
+    "class_id": "ler_texto",
+    "label": "Ler Texto (Comando 1)",
+    "description": "Dispara o leitor de tela para narrar o conteúdo acessível",
+    "filename": "demo_ler_texto.wav",
+    "url": "/static/demo_samples/demo_ler_texto.wav"
+  },
+  {
+    "class_id": "aumentar_fonte",
+    "label": "Aumentar Fonte (Comando 2)",
+    "description": "Aumenta a escala tipográfica da interface para baixa visão",
+    "filename": "demo_aumentar_fonte.wav",
+    "url": "/static/demo_samples/demo_aumentar_fonte.wav"
+  },
+  {
+    "class_id": "diminuir_fonte",
+    "label": "Diminuir Fonte (Comando 3)",
+    "description": "Reduz o tamanho da fonte da interface",
+    "filename": "demo_diminuir_fonte.wav",
+    "url": "/static/demo_samples/demo_diminuir_fonte.wav"
+  },
+  {
+    "class_id": "mudar_voz",
+    "label": "Mudar Voz (Comando 4)",
+    "description": "Alterna entre diferentes perfis vocais e velocidades de fala",
+    "filename": "demo_mudar_voz.wav",
+    "url": "/static/demo_samples/demo_mudar_voz.wav"
+  },
+  {
+    "class_id": "modo_claro",
+    "label": "Modo Claro (Comando 5)",
+    "description": "Ativa o tema visual claro para ambientes iluminados",
+    "filename": "demo_modo_claro.wav",
+    "url": "/static/demo_samples/demo_modo_claro.wav"
+  },
+  {
+    "class_id": "modo_escuro",
+    "label": "Modo Escuro (Comando 6)",
+    "description": "Ativa o tema visual escuro com alto contraste",
+    "filename": "demo_modo_escuro.wav",
+    "url": "/static/demo_samples/demo_modo_escuro.wav"
+  },
+  {
+    "class_id": "background",
+    "label": "Ruído Ambiente / Silêncio",
+    "description": "Áudio sem comando (simula ruído de fundo ou silêncio)",
+    "filename": "demo_background.wav",
+    "url": "/static/demo_samples/demo_background.wav"
+  }
+]

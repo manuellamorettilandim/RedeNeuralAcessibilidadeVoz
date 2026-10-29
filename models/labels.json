@@ -1,0 +1,60 @@
+{
+  "classes": [
+    "aumentar_fonte",
+    "background",
+    "diminuir_fonte",
+    "ler_texto",
+    "modo_claro",
+    "modo_escuro",
+    "mudar_voz"
+  ],
+  "input_shape": [
+    1,
+    20,
+    47
+  ],
+  "metadata": {
+    "aumentar_fonte": {
+      "display_name": "Aumentar Fonte",
+      "action": "increase_font",
+      "description": "Zoom tipográfico para baixa visão",
+      "color": "#10b981"
+    },
+    "background": {
+      "display_name": "Nenhum Comando",
+      "action": "none",
+      "description": "Ruído ambiente, silêncio ou fala não relacionada",
+      "color": "#64748b"
+    },
+    "diminuir_fonte": {
+      "display_name": "Diminuir Fonte",
+      "action": "decrease_font",
+      "description": "Redução do tamanho da fonte",
+      "color": "#ec4899"
+    },
+    "ler_texto": {
+      "display_name": "Ler Texto",
+      "action": "read_text",
+      "description": "Leitor de tela por voz sintetizada",
+      "color": "#3b82f6"
+    },
+    "modo_claro": {
+      "display_name": "Modo Claro",
+      "action": "set_light_theme",
+      "description": "Ativação do tema visual claro",
+      "color": "#f59e0b"
+    },
+    "modo_escuro": {
+      "display_name": "Modo Escuro",
+      "action": "set_dark_theme",
+      "description": "Ativação do tema visual escuro com alto contraste",
+      "color": "#06b6d4"
+    },
+    "mudar_voz": {
+      "display_name": "Mudar Voz",
+      "action": "change_voice",
+      "description": "Alternância de perfil e timbre vocal",
+      "color": "#8b5cf6"
+    }
+  }
+}
