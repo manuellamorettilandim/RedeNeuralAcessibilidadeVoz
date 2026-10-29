@@ -1,22 +1,11 @@
-# =============================================================================
-# PROJETO: Reconhecimento de Comandos de Voz para Acessibilidade
-# Dependências do Sistema (Python 3.10+) — otimizado para deploy no Render
-# =============================================================================
-
-# Framework Web & Servidor
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
 fastapi>=0.110.0
 uvicorn>=0.28.0
 python-multipart>=0.0.9
-
-# Deep Learning (PyTorch CPU — sem CUDA para reduzir tamanho)
-torch>=2.0.0
 scikit-learn>=1.4.0
 numpy>=1.26.0
-
-# Processamento de Áudio & Acústica
 librosa>=0.10.0
 soundfile>=0.12.0
 scipy>=1.12.0
-
-# Visualização & Gráficos
 matplotlib>=3.8.0
